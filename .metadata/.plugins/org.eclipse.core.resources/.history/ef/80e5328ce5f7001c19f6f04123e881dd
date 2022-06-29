@@ -1,0 +1,56 @@
+import java.lang.Thread;
+import java.time.Instant;
+import java.util.concurrent.locks.ReentrantLock;
+
+public class MTCollatz {
+
+	public static void main(String[] args) {
+		String upperLimitArg = args[0];
+		String threadLimitArg = args[1];
+		int upperLimit = (int)Integer.parseInt(upperLimitArg);
+		int threadLimit = (int)Integer.parseInt(threadLimitArg);
+		int[][] intArray = new int[upperLimit][2];
+		int counter = 2;
+		
+		
+		
+		for(int i = 0; i < threadLimit; i++) {
+			Thread object = new Thread(new threadRunner(upperLimit));
+			object.start();
+		}
+		
+	}
+	public class threadRunner implements Runnable {
+		int upper;
+		public threadRunner(int upper) {
+			this.upper = upper;
+		}
+		@Override
+		public void run() {
+			Instant startInstant = Instant.now();
+			int i = Calc(upper);
+			Instant endInstant = Instant.now();
+			int duration = startInstant.getNano()-endInstant.getNano();
+			
+		}
+	}
+	
+	
+	public static int Calc(int num) {
+		
+		int i = 0;
+		long value = (long)num;
+		
+		while(value != 1) {
+			if (value % 2 == 0) {
+				value = value / 2;
+				i++;
+			}
+			else {
+				value = (value * 3) + 1;
+				i++;
+			}
+		}
+		return i;
+	}
+}

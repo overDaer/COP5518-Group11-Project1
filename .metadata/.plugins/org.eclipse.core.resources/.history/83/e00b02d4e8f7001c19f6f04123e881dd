@@ -1,0 +1,71 @@
+import java.lang.Thread;
+import java.time.Instant;
+import java.util.concurrent.locks.ReentrantLock;
+
+public class MTCollatz {
+
+	public static void main(String[] args) {
+		
+		String upperLimitArg = args[0];
+		String threadLimitArg = args[1];
+		int upperLimit = (int)Integer.parseInt(upperLimitArg);
+		int threadLimit = (int)Integer.parseInt(threadLimitArg);
+		
+		
+		
+		
+		
+		class DataSet{
+			int[][] resultArray;
+			int Counter = 2;
+			public DataSet(int[][] array) {
+				this.resultArray = array;
+			}
+			public void increment() {
+				Counter++;
+			}
+		}
+		
+		DataSet data = new DataSet(new int[upperLimit][2]);
+		
+		class threadRunner implements Runnable {
+			@Override
+			public void run() {
+				//get start time
+				Instant startInstant = Instant.now();
+				//run calculations
+				int i = Calc(data.Counter);
+				data.increment();
+				Instant endInstant = Instant.now();
+				int duration = startInstant.getNano()-endInstant.getNano();
+				String threadName = Thread.currentThread().getName();
+				System.err.println(data.Counter + ", " +  threadName + ", " + duration);
+			}
+		}
+		
+		for(int i = 0; i < threadLimit; i++) {
+			Thread thread = new Thread(new threadRunner(), String.valueOf(i));
+			thread.start();
+		}
+		
+	}
+	
+	public static int Calc(int num) {
+		
+		int i = 0;
+		//use long in case value gets very large
+		long value = (long)num;
+		
+		while(value != 1) {
+			if (value % 2 == 0) {
+				value = value / 2;
+				i++;
+			}
+			else {
+				value = (value * 3) + 1;
+				i++;
+			}
+		}
+		return i;
+	}
+}

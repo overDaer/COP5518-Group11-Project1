@@ -1,0 +1,25 @@
+
+public class MTCollatz {
+
+	public static void main(String[] args) {
+		String upperLimitArg = args[0];
+		String threadLimitArg = args[1];
+		int upperLimit = (int)Integer.parseInt(upperLimitArg);
+		int threadLimit = (int)Integer.parseInt(threadLimitArg);
+		
+		int[] intArray = new int[upperLimit];
+		for(Long i = (long) 1; i < upperLimit; i++) {
+			
+		}
+		
+	}
+	public static long Calc(long num) {
+		if (num % 2 == 0) {
+			return num / 2;
+		}
+		else {
+			return (3 * num) + 1;
+		}
+	}
+
+}

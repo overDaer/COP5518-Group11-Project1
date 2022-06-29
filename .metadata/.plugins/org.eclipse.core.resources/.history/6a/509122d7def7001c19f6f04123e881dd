@@ -1,0 +1,13 @@
+
+public class MTCollatz {
+
+	public static void main(String[] args) {
+		String upperLimitArg = args[0];
+		String threadLimitArg = args[1];
+		Long upperLimit = Long.parseLong(upperLimitArg);
+		Integer threadLimit = Integer.parseInt(threadLimitArg);
+		
+		
+	}
+
+}
