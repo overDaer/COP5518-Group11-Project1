@@ -1,0 +1,4 @@
+INDEX VERSION 1.131+H:\Computer Science Masters\Computing Essentials\Project-1\.metadata\.plugins\org.eclipse.jdt.core
+2918617735.index
+207914713.index
+1865797976.index
