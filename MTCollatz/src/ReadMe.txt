@@ -20,9 +20,3 @@ Because of this, the counter was incrementing in the short time between the whil
 check and the lock function running, so we had to place a second conditional check after
 the lock so that there was no way the counter would increment from another thread which 
 did have it locked.
-
-Locking:
-
-There may have been a better solution to the simple locking unlocking, since we do not account for threads attempting to use it while locked in an elegent way,
-instead just continuing iterating in the while loop until it is available. But because of the speed of the program, we found it unnecessary to optimize further.
-
