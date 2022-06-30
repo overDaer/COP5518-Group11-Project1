@@ -9,6 +9,8 @@ for ranges and thread provided by the user within Command Prompt or equivalent.
 
 import java.lang.Thread;
 import java.time.Instant;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 //parent class to contain all MTCollatz classes
@@ -31,6 +33,7 @@ public class MTCollatz {
 		class DataSet {
 			Instant startInstant;
 			Instant endInstant;
+			boolean Complete = false;
 			//lock belongs in shared data class so that threads can lock unlock on shared memory
 			ReentrantLock lock = new ReentrantLock();
 			int[] resultArray;
@@ -51,7 +54,9 @@ public class MTCollatz {
 						resultArray[Counter-2] = Formula(Counter);
 						Counter++;
 					}
-					
+					else {
+						Complete = true;
+					}
 				}
 				//guaranteed unlock to avoid Mutual Exclusion Lock
 				finally {
@@ -98,35 +103,41 @@ public class MTCollatz {
 		
 		class threadRunner implements Runnable {
 			@Override
+			
 			public void run() {
 				//startInstant is set by first thread to run
-				if (data.startInstant == null) data.startInstant = Instant.now();
+				if(data.startInstant == null) data.startInstant = Instant.now();
 				//must check again after lock to ensure sync
 				while(data.Counter <= upperLimit) {
 					data.Calculate();
-					System.out.println(Thread.currentThread().getName());
 				}
-				//only get runtime for original thread after while loop is complete
-				if(Thread.currentThread().getName().equals("0")) {
+				if(data.endInstant == null) {
 					data.endInstant = Instant.now();
-					int duration = data.endInstant.getNano() - data.startInstant.getNano();
-					//convert nano to micro seconds
-					duration = duration / 1000;
+					
 					//prints to stderr
-					System.err.println(upperLimit + "," +  threadLimitArg + "," + duration);
-					//data.print();
+					
 				}
 			}
 		}
 		//Creates the threads specified by user
+		List<Thread> threadList = new LinkedList<Thread>();
+		
 		for(int i = 0; i < threadLimit; i++) {
 			Thread thread = new Thread(new threadRunner(), String.valueOf(i));
+			threadList.add(thread);
 			thread.start();
+		}
+		
+		for (Thread t: threadList) {
 			try {
-				thread.join();
+				t.join();
 			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
+		//data.print();
+		int duration = data.endInstant.getNano() - data.startInstant.getNano();
+		System.err.println(upperLimit + "," +  threadLimitArg + "," + duration);
 	}
 }

@@ -113,9 +113,6 @@ public class MTCollatz {
 				}
 				if(data.endInstant == null) {
 					data.endInstant = Instant.now();
-					
-					//prints to stderr
-					
 				}
 			}
 		}
