@@ -106,8 +106,8 @@ public class MTCollatz {
 			
 			public void run() {
 				//startInstant is set by first thread to run
-				//must check again after lock to ensure sync
 				if(data.startInstant == null) data.startInstant = Instant.now();
+				//must check again after lock to ensure sync
 				while(data.Counter <= upperLimit) {
 					data.Calculate();
 				}
@@ -115,7 +115,7 @@ public class MTCollatz {
 				int duration = data.endInstant.getNano() - data.startInstant.getNano();
 				//prints to stderr
 				System.err.println(upperLimit + "," +  threadLimitArg + "," + duration);
-				//data.print();
+				data.print();
 			}
 		}
 		//Creates the threads specified by user
@@ -124,7 +124,6 @@ public class MTCollatz {
 		
 		for(int i = 0; i < threadLimit; i++) {
 			Thread thread = new Thread(new threadRunner(), String.valueOf(i));
-			//unfortunately, the adding thread to list to reference after the loop is time cost
 			threadList.add(thread);
 			thread.start();
 		}
