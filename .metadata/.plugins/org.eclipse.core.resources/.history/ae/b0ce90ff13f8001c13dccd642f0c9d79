@@ -97,6 +97,11 @@ public class MTCollatz {
 					System.out.print(result);
 				}
 			}
+			
+			public void setStartTime() {
+				lock.lock();
+				startInstant = Instant.now();
+			}
 		}
 		//instance of shared memory class DataSet which is stored in heap
 		DataSet data = new DataSet(new int[upperLimit-1]);
@@ -113,9 +118,9 @@ public class MTCollatz {
 				}
 				if(data.endInstant == null) {
 					data.endInstant = Instant.now();
-					
+					int duration = data.endInstant.getNano() - data.startInstant.getNano();
 					//prints to stderr
-					
+					System.err.println(upperLimit + "," +  threadLimitArg + "," + duration);
 				}
 			}
 		}
@@ -136,8 +141,6 @@ public class MTCollatz {
 				e.printStackTrace();
 			}
 		}
-		//data.print();
-		int duration = data.endInstant.getNano() - data.startInstant.getNano();
-		System.err.println(upperLimit + "," +  threadLimitArg + "," + duration);
+		data.print();
 	}
 }

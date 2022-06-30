@@ -113,9 +113,9 @@ public class MTCollatz {
 				}
 				if(data.endInstant == null) {
 					data.endInstant = Instant.now();
-					
+					int duration = data.endInstant.getNano() - data.startInstant.getNano();
 					//prints to stderr
-					
+					System.err.println(upperLimit + "," +  threadLimitArg + "," + duration);
 				}
 			}
 		}
@@ -136,8 +136,6 @@ public class MTCollatz {
 				e.printStackTrace();
 			}
 		}
-		//data.print();
-		int duration = data.endInstant.getNano() - data.startInstant.getNano();
-		System.err.println(upperLimit + "," +  threadLimitArg + "," + duration);
+		data.print();
 	}
 }

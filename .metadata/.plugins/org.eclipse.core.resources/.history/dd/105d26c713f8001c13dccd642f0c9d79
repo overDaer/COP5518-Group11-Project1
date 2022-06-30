@@ -81,7 +81,7 @@ public class MTCollatz {
 				return i;
 			}
 			//prints out large array of results. Format is based on the assignment
-			public void print() {
+			public void printData() {
 				if (this.resultArray.length > 0) {
 					String result = "<";
 					for (int i = 0; i < upperLimit - 1; i ++) {
@@ -113,9 +113,9 @@ public class MTCollatz {
 				}
 				if(data.endInstant == null) {
 					data.endInstant = Instant.now();
-					
+					int duration = data.endInstant.getNano() - data.startInstant.getNano();
 					//prints to stderr
-					
+					System.err.println(upperLimit + "," +  threadLimitArg + "," + duration);
 				}
 			}
 		}
@@ -136,8 +136,6 @@ public class MTCollatz {
 				e.printStackTrace();
 			}
 		}
-		//data.print();
-		int duration = data.endInstant.getNano() - data.startInstant.getNano();
-		System.err.println(upperLimit + "," +  threadLimitArg + "," + duration);
+		data.print();
 	}
 }

@@ -136,7 +136,7 @@ public class MTCollatz {
 				e.printStackTrace();
 			}
 		}
-		//data.print();
+		data.print();
 		int duration = data.endInstant.getNano() - data.startInstant.getNano();
 		System.err.println(upperLimit + "," +  threadLimitArg + "," + duration);
 	}

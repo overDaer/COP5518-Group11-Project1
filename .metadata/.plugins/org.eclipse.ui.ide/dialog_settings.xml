@@ -12,7 +12,10 @@
 		<item key="SmartImportRootWizardPage.STORE_NESTED_PROJECTS" value="true"/>
 		<item key="SmartImportRootWizardPage.STORE_CONFIGURE_NATURES" value="true"/>
 		<list key="org.eclipse.ui.internal.wizards.datatransfer.SmartImportRootWizardPage.knownSources">
+			<item value="H:\Computer Science Masters\Computing Essentials\COP5518-Group11-Project1"/>
 			<item value="H:\Computer Science Masters\Computing Essentials\Project-1\COP5518-Group11-Project-1"/>
 		</list>
+	</section>
+	<section name="ExternalProjectImportWizard">
 	</section>
 </section>

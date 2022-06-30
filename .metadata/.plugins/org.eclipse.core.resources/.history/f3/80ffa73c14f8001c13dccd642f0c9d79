@@ -97,6 +97,25 @@ public class MTCollatz {
 					System.out.print(result);
 				}
 			}
+			
+			public void setStartTime() {
+				try {
+					lock.lock();
+					startInstant = Instant.now();
+				}
+				finally {
+					lock.unlock();
+				}
+			}
+			public void setEndTime() {
+				try {
+					lock.lock();
+					endInstant = Instant.now();
+				}
+				finally {
+					lock.unlock();
+				}
+			}
 		}
 		//instance of shared memory class DataSet which is stored in heap
 		DataSet data = new DataSet(new int[upperLimit-1]);
@@ -106,16 +125,16 @@ public class MTCollatz {
 			
 			public void run() {
 				//startInstant is set by first thread to run
-				if(data.startInstant == null) data.startInstant = Instant.now();
+				if(data.startInstant == null) data.setStartTime();
 				//must check again after lock to ensure sync
 				while(data.Counter <= upperLimit) {
 					data.Calculate();
 				}
-				if(data.endInstant == null) {
+				if(data.endInstant == null) data.setEndTime(); {
 					data.endInstant = Instant.now();
-					
+					int duration = data.endInstant.getNano() - data.startInstant.getNano();
 					//prints to stderr
-					
+					System.err.println(upperLimit + "," +  threadLimitArg + "," + duration);
 				}
 			}
 		}
@@ -136,8 +155,6 @@ public class MTCollatz {
 				e.printStackTrace();
 			}
 		}
-		//data.print();
-		int duration = data.endInstant.getNano() - data.startInstant.getNano();
-		System.err.println(upperLimit + "," +  threadLimitArg + "," + duration);
+		data.print();
 	}
 }
