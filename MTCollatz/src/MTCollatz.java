@@ -8,6 +8,7 @@ for ranges and thread provided by the user within Command Prompt or equivalent.
 **************************************************************/
 
 import java.lang.Thread;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,13 +46,12 @@ public class MTCollatz {
 			}
 			//Calculate will try lock, then perform calculation and iterate Counter
 			//this is necessary to lock when calculating because Counter is directly tied to calculation
-			public void Calculate() {
+			public void Calculate(int safeCount) {
 				try {
 					lock.lock();
 					//checking Counter occurs in lock because Counter value may change outside lock
 					if(this.Counter <= upperLimit) {
-						//N = 2 starts at Array[0]
-						resultArray[Counter-2] = Formula(Counter);
+						safeCount = Counter;
 						Counter++;
 					}
 					else {
@@ -61,10 +61,13 @@ public class MTCollatz {
 				//guaranteed unlock to avoid Mutual Exclusion Lock
 				finally {
 					lock.unlock();
+					//calculate outside unlock so other threads can access counter
+					//N = 2 starts at Array[0]
+					if (safeCount > 0) resultArray[safeCount-2] = Formula(safeCount);
 				}
 			}
 			//The MTCollatz formula
-			public static int Formula(int num) {
+			public int Formula(int num) {
 				int i = 1;
 				//use long in case value gets large
 				long value = (long)num;
@@ -100,24 +103,22 @@ public class MTCollatz {
 		}
 		//instance of shared memory class DataSet which is stored in heap
 		DataSet data = new DataSet(new int[upperLimit-1]);
-		
+		int safeCount = 0;
 		class threadRunner implements Runnable {
 			@Override
-			
 			public void run() {
-				//startInstant is set by first thread to run
-				if(data.startInstant == null) data.startInstant = Instant.now();
 				//must check again after lock to ensure sync
 				while(data.Counter <= upperLimit) {
-					data.Calculate();
+					data.Calculate(safeCount);
 				}
-				if(data.endInstant == null) {
-					data.endInstant = Instant.now();
-				}
+				
 			}
 		}
 		//Creates the threads specified by user
 		List<Thread> threadList = new LinkedList<Thread>();
+		
+
+		if(data.startInstant == null) data.startInstant = Instant.now();
 		
 		for(int i = 0; i < threadLimit; i++) {
 			Thread thread = new Thread(new threadRunner(), String.valueOf(i));
@@ -133,8 +134,13 @@ public class MTCollatz {
 				e.printStackTrace();
 			}
 		}
-		//data.print();
-		int duration = data.endInstant.getNano() - data.startInstant.getNano();
+		
+		if(data.endInstant == null) data.endInstant = Instant.now();
+		
+		data.print();
+		//duration measure from opening of threads to closing of threads
+		long duration = Duration.between(data.startInstant, data.endInstant).toMillis();
+		System.out.println();
 		System.err.println(upperLimit + "," +  threadLimitArg + "," + duration);
 	}
 }
