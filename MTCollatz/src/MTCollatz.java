@@ -47,6 +47,7 @@ public class MTCollatz {
 			//Calculate will try lock, then perform calculation and iterate Counter
 			//this is necessary to lock when calculating because Counter is directly tied to calculation
 			public void Calculate(int safeCount) {
+				safeCount = 0;
 				try {
 					lock.lock();
 					//checking Counter occurs in lock because Counter value may change outside lock
@@ -137,7 +138,7 @@ public class MTCollatz {
 		
 		if(data.endInstant == null) data.endInstant = Instant.now();
 		
-		data.print();
+		//data.print();
 		//duration measure from opening of threads to closing of threads
 		long duration = Duration.between(data.startInstant, data.endInstant).toMillis();
 		System.out.println();
