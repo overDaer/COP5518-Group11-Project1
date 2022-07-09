@@ -138,7 +138,7 @@ public class MTCollatz {
 		
 		if(data.endInstant == null) data.endInstant = Instant.now();
 		
-		//data.print();
+		data.print();
 		//duration measure from opening of threads to closing of threads
 		long duration = Duration.between(data.startInstant, data.endInstant).toMillis();
 		System.out.println();
