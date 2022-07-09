@@ -18,6 +18,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class MTCollatz {
 	
+	
 	//main class
 	public static void main(String[] args) {
 		
@@ -27,6 +28,12 @@ public class MTCollatz {
 		//Number of threads
 		String threadLimitArg = args[1];
 		//convert string to int
+		
+		
+		//String upperLimitArg = "10000";
+		//String threadLimitArg = "2";
+		
+		
 		int upperLimit = (int)Integer.parseInt(upperLimitArg);
 		int threadLimit = (int)Integer.parseInt(threadLimitArg);
 		
@@ -37,22 +44,20 @@ public class MTCollatz {
 			boolean Complete = false;
 			//lock belongs in shared data class so that threads can lock unlock on shared memory
 			ReentrantLock lock = new ReentrantLock();
-			int[] resultArray;
-			//resultArray[0] will start with Counter = 2
+			int[] resultArray = new int[597]; //Max possible length for N below 5 million is 597
 			int Counter = 2;
-			//Constructor
-			public DataSet(int[] array) {
-				this.resultArray = array;
-			}
+			int maxLength = 0;
+			
 			//Calculate will try lock, then perform calculation and iterate Counter
 			//this is necessary to lock when calculating because Counter is directly tied to calculation
-			public void Calculate(int safeCount) {
-				safeCount = 0;
+			public void Calculate() {
 				try {
 					lock.lock();
 					//checking Counter occurs in lock because Counter value may change outside lock
 					if(this.Counter <= upperLimit) {
-						safeCount = Counter;
+						int stopTime = Formula(Counter);
+						if (maxLength < stopTime) maxLength = stopTime;
+						if (stopTime <= 597) resultArray[stopTime-2] += 1; //increment frequency if critical code ran
 						Counter++;
 					}
 					else {
@@ -64,7 +69,7 @@ public class MTCollatz {
 					lock.unlock();
 					//calculate outside unlock so other threads can access counter
 					//N = 2 starts at Array[0]
-					if (safeCount > 0) resultArray[safeCount-2] = Formula(safeCount);
+					
 				}
 			}
 			//The MTCollatz formula
@@ -85,34 +90,33 @@ public class MTCollatz {
 				return i;
 			}
 			//prints out large array of results. Format is based on the assignment
-			public void print() {
-				if (this.resultArray.length > 0) {
+			public void print(int[] array) {
+				if (array.length > 0) {
 					String result = "<";
-					for (int i = 0; i < upperLimit - 1; i ++) {
+					for (int i = 0; i < array.length; i ++) {
 						result = result + String.valueOf(i+2);
-						if (i < upperLimit - 2) result = result + ",";
+						if (i < array.length - 1) result = result + ",";
 					}
 					result = result + ">,<";
-					for (int i = 0; i < upperLimit - 1; i++) {
-						result = result + String.valueOf(this.resultArray[i]);
-						if (i < upperLimit - 2) result = result + ",";
+					for (int i = 0; i < array.length; i++) {
+						result = result + String.valueOf(array[i]);
+						if (i < array.length - 1) result = result + ",";
 					}
 					result = result + ">";
 					System.out.print(result);
 				}
 			}
 		}
+		
 		//instance of shared memory class DataSet which is stored in heap
-		DataSet data = new DataSet(new int[upperLimit-1]);
-		int safeCount = 0;
+		DataSet data = new DataSet();
 		class threadRunner implements Runnable {
 			@Override
 			public void run() {
 				//must check again after lock to ensure sync
 				while(data.Counter <= upperLimit) {
-					data.Calculate(safeCount);
+					data.Calculate();
 				}
-				
 			}
 		}
 		//Creates the threads specified by user
@@ -137,8 +141,11 @@ public class MTCollatz {
 		}
 		
 		if(data.endInstant == null) data.endInstant = Instant.now();
-		
-		data.print();
+		int[] array = new int[data.maxLength - 1];
+		for (int i = 0 ; i < data.maxLength - 1; i++) {
+			array[i] = data.resultArray[i];
+		}
+		data.print(array);
 		//duration measure from opening of threads to closing of threads
 		long duration = Duration.between(data.startInstant, data.endInstant).toMillis();
 		System.out.println();
