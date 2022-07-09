@@ -30,66 +30,54 @@ public class MTCollatz {
 		//convert string to int
 		
 		
-		//String upperLimitArg = "10000";
-		//String threadLimitArg = "2";
+		//String upperLimitArg = "5";
+		//String threadLimitArg = "1";
 		
 		
 		int upperLimit = (int)Integer.parseInt(upperLimitArg);
 		int threadLimit = (int)Integer.parseInt(threadLimitArg);
 		
 		//shared data class
-		class DataSet {
-			Instant startInstant;
-			Instant endInstant;
-			boolean Complete = false;
-			//lock belongs in shared data class so that threads can lock unlock on shared memory
+		class DataSet{
 			ReentrantLock lock = new ReentrantLock();
-			int[] resultArray = new int[597]; //Max possible length for N below 5 million is 597
+			int[] resultArray = new int[1000];
+			Instant startInstant = null;
+			Instant endInstant = null;
 			int Counter = 2;
 			int maxLength = 0;
-			
-			//Calculate will try lock, then perform calculation and iterate Counter
-			//this is necessary to lock when calculating because Counter is directly tied to calculation
-			public void Calculate() {
-				try {
+			//lock, get counter, increment, unlock
+			public int GetCounter() {
+				try{
 					lock.lock();
-					//checking Counter occurs in lock because Counter value may change outside lock
-					if(this.Counter <= upperLimit) {
-						int stopTime = Formula(Counter);
-						if (maxLength < stopTime) maxLength = stopTime;
-						if (stopTime <= 597) resultArray[stopTime-2] += 1; //increment frequency if critical code ran
-						Counter++;
-					}
-					else {
-						Complete = true;
+					return this.Counter;
+				}
+				finally {
+					this.Counter++;
+					lock.unlock();
+				}
+			}
+			//if input is greater than maxLength then update
+			public void SetMax(int stopTime) {
+				try{
+					lock.lock();
+					if (this.maxLength < stopTime) {
+						maxLength = stopTime;
 					}
 				}
-				//guaranteed unlock to avoid Mutual Exclusion Lock
 				finally {
 					lock.unlock();
-					//calculate outside unlock so other threads can access counter
-					//N = 2 starts at Array[0]
-					
 				}
 			}
-			//The MTCollatz formula
-			public int Formula(int num) {
-				int i = 1;
-				//use long in case value gets large
-				long value = (long)num;
-				while(value != 1) {
-					if (value % 2 == 0) {
-						value = value / 2;
-						i++;
-					}
-					else {
-						value = ((value * 3) + 1);
-						i++;
-					}
+			//increments frequency of stoppingTime in resultArray
+			public void increment(int i) {
+				try{
+					lock.lock();
+					resultArray[i] += 1;
 				}
-				return i;
+				finally {
+					lock.unlock();
+				}
 			}
-			//prints out large array of results. Format is based on the assignment
 			public void print(int[] array) {
 				if (array.length > 0) {
 					String result = "<";
@@ -107,47 +95,80 @@ public class MTCollatz {
 				}
 			}
 		}
+		//1 per thread
+		class DataSetHelper {
+			//local thread safe count
+			int safeCount = 0;
+			public void Calculate(DataSet d) {
+				safeCount = d.GetCounter();
+				if(safeCount <= upperLimit && safeCount > 0) {
+					//calculated outside lock
+					int stopTime = Formula(safeCount);
+					d.SetMax(stopTime);
+					if (stopTime <= 1000) d.increment(stopTime-2); //increment frequency if critical code ran
+				}
+			}
+			//The MTCollatz formula
+			public static int Formula(int num) {
+				int i = 1;
+				//use long in case value gets large
+				long value = (long)num;
+				while(value != 1) {
+					if (value % 2 == 0) {
+						value = value / 2;
+						i++;
+					}
+					else {
+						value = ((value * 3) + 1);
+						i++;
+					}
+				}
+				return i;
+			}
+			//prints out large array of results. Format is based on the assignment
+		}
 		
 		//instance of shared memory class DataSet which is stored in heap
 		DataSet data = new DataSet();
+		
 		class threadRunner implements Runnable {
+			//one instance for each thread
+			DataSetHelper dataHelp = new DataSetHelper();
 			@Override
 			public void run() {
 				//must check again after lock to ensure sync
 				while(data.Counter <= upperLimit) {
-					data.Calculate();
+					this.dataHelp.Calculate(data);
 				}
 			}
 		}
 		//Creates the threads specified by user
 		List<Thread> threadList = new LinkedList<Thread>();
 		
-
-		if(data.startInstant == null) data.startInstant = Instant.now();
-		
 		for(int i = 0; i < threadLimit; i++) {
 			Thread thread = new Thread(new threadRunner(), String.valueOf(i));
 			threadList.add(thread);
+			if(data.startInstant == null) data.startInstant = Instant.now();
 			thread.start();
 		}
 		
 		for (Thread t: threadList) {
 			try {
 				t.join();
+				if(data.endInstant == null) data.endInstant = Instant.now();
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 		
-		if(data.endInstant == null) data.endInstant = Instant.now();
 		int[] array = new int[data.maxLength - 1];
 		for (int i = 0 ; i < data.maxLength - 1; i++) {
 			array[i] = data.resultArray[i];
 		}
 		data.print(array);
 		//duration measure from opening of threads to closing of threads
-		long duration = Duration.between(data.startInstant, data.endInstant).toMillis();
+		float duration = Duration.between(data.startInstant, data.endInstant).toMillis();
 		System.out.println();
 		System.err.println(upperLimit + "," +  threadLimitArg + "," + duration);
 	}
