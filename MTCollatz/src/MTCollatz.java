@@ -1,3 +1,4 @@
+
 /**************************************************************
 Student Name: Dae Sung, Mukesh Rathore
 File Name: MTCollatz
@@ -17,159 +18,164 @@ import java.util.concurrent.locks.ReentrantLock;
 //parent class to contain all MTCollatz classes
 
 public class MTCollatz {
-	
-	
-	//main class
+
+	// main class
 	public static void main(String[] args) {
-		
-		//args provided by user in bash/shell/command prompt
-		//UpperLimit of Range N
+
+		// args provided by user in bash/shell/command prompt
+		// UpperLimit of Range N
 		String upperLimitArg = args[0];
-		//Number of threads
+		// Number of threads
 		String threadLimitArg = args[1];
-		//convert string to int
-		
-		
-		//String upperLimitArg = "5";
-		//String threadLimitArg = "1";
-		
-		
-		int upperLimit = (int)Integer.parseInt(upperLimitArg);
-		int threadLimit = (int)Integer.parseInt(threadLimitArg);
-		
-		//shared data class
-		class DataSet{
+		// convert string to int
+
+		// String upperLimitArg = "5";
+		// String threadLimitArg = "1";
+
+		int upperLimit = (int) Integer.parseInt(upperLimitArg);
+		int threadLimit = (int) Integer.parseInt(threadLimitArg);
+
+		// shared data class
+		class DataSet {
 			ReentrantLock lock = new ReentrantLock();
 			int[] resultArray = new int[1000];
 			Instant startInstant = null;
 			Instant endInstant = null;
-			int Counter = 2;
+			int counter = 2;
 			int maxLength = 0;
-			//lock, get counter, increment, unlock
+
+			// lock, get counter, increment, unlock
 			public int GetCounter() {
-				try{
+				try {
 					lock.lock();
-					return this.Counter;
-				}
-				finally {
-					this.Counter++;
+					return this.counter;
+				} finally {
+					this.counter++;
 					lock.unlock();
 				}
 			}
-			//if input is greater than maxLength then update
+
+			// if input is greater than maxLength then update
 			public void SetMax(int stopTime) {
-				try{
+				try {
 					lock.lock();
 					if (this.maxLength < stopTime) {
 						maxLength = stopTime;
 					}
-				}
-				finally {
+				} finally {
 					lock.unlock();
 				}
 			}
-			//increments frequency of stoppingTime in resultArray
+
+			// increments frequency of stoppingTime in resultArray
 			public void increment(int i) {
-				try{
+				try {
 					lock.lock();
 					resultArray[i] += 1;
-				}
-				finally {
+				} finally {
 					lock.unlock();
 				}
 			}
+
 			public void print(int[] array) {
 				if (array.length > 0) {
 					String result = "<";
-					for (int i = 0; i < array.length; i ++) {
-						result = result + String.valueOf(i+2);
-						if (i < array.length - 1) result = result + ",";
+					for (int i = 0; i < array.length; i++) {
+						result = result + String.valueOf(i + 2);
+						if (i < array.length - 1)
+							result = result + ",";
 					}
 					result = result + ">,<";
 					for (int i = 0; i < array.length; i++) {
 						result = result + String.valueOf(array[i]);
-						if (i < array.length - 1) result = result + ",";
+						if (i < array.length - 1)
+							result = result + ",";
 					}
 					result = result + ">";
 					System.out.print(result);
 				}
 			}
 		}
-		//1 per thread
+		// 1 per thread
 		class DataSetHelper {
-			//local thread safe count
+			// local thread safe count
 			int safeCount = 0;
+
 			public void Calculate(DataSet d) {
 				safeCount = d.GetCounter();
-				if(safeCount <= upperLimit && safeCount > 0) {
-					//calculated outside lock
+				if (safeCount <= upperLimit && safeCount > 0) {
+					// calculated outside lock
 					int stopTime = Formula(safeCount);
 					d.SetMax(stopTime);
-					if (stopTime <= 1000) d.increment(stopTime-2); //increment frequency if critical code ran
+					if (stopTime <= 1000)
+						d.increment(stopTime - 2); // increment frequency if critical code ran
 				}
 			}
-			//The MTCollatz formula
+
+			// The MTCollatz formula
 			public static int Formula(int num) {
 				int i = 1;
-				//use long in case value gets large
-				long value = (long)num;
-				while(value != 1) {
+				// use long in case value gets large
+				long value = (long) num;
+				while (value != 1) {
 					if (value % 2 == 0) {
 						value = value / 2;
 						i++;
-					}
-					else {
+					} else {
 						value = ((value * 3) + 1);
 						i++;
 					}
 				}
 				return i;
 			}
-			//prints out large array of results. Format is based on the assignment
+			// prints out large array of results. Format is based on the assignment
 		}
-		
-		//instance of shared memory class DataSet which is stored in heap
+
+		// instance of shared memory class DataSet which is stored in heap
 		DataSet data = new DataSet();
-		
+
 		class threadRunner implements Runnable {
-			//one instance for each thread
+			// one instance for each thread
 			DataSetHelper dataHelp = new DataSetHelper();
+
 			@Override
 			public void run() {
-				//must check again after lock to ensure sync
-				while(data.Counter <= upperLimit) {
+				// must check again after lock to ensure sync
+				while (data.counter <= upperLimit) {
 					this.dataHelp.Calculate(data);
 				}
 			}
 		}
-		//Creates the threads specified by user
+		// Creates the threads specified by user
 		List<Thread> threadList = new LinkedList<Thread>();
-		
-		for(int i = 0; i < threadLimit; i++) {
+
+		for (int i = 0; i < threadLimit; i++) {
 			Thread thread = new Thread(new threadRunner(), String.valueOf(i));
 			threadList.add(thread);
-			if(data.startInstant == null) data.startInstant = Instant.now();
+			if (data.startInstant == null)
+				data.startInstant = Instant.now();
 			thread.start();
 		}
-		
-		for (Thread t: threadList) {
+
+		for (Thread t : threadList) {
 			try {
 				t.join();
-				if(data.endInstant == null) data.endInstant = Instant.now();
+				if (data.endInstant == null)
+					data.endInstant = Instant.now();
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-		
+
 		int[] array = new int[data.maxLength - 1];
-		for (int i = 0 ; i < data.maxLength - 1; i++) {
+		for (int i = 0; i < data.maxLength - 1; i++) {
 			array[i] = data.resultArray[i];
 		}
 		data.print(array);
-		//duration measure from opening of threads to closing of threads
+		// duration measure from opening of threads to closing of threads
 		float duration = Duration.between(data.startInstant, data.endInstant).toMillis();
 		System.out.println();
-		System.err.println(upperLimit + "," +  threadLimitArg + "," + duration);
+		System.err.println(upperLimit + "," + threadLimitArg + "," + duration);
 	}
 }
