@@ -6,9 +6,9 @@ Assignment Number: Project 1
 
 INSTRUCTIONS:
 In order to run the java file, open the Windows PowerShell or CommandPrompt in the containing folder.
-Run "java MTCollatz.java [range N] [threads T]"
-Optionally "java MTCollatz.java [range N] [threads T] 2> results.csv" to get output of Range R, threads T, and runtime in milliseconds.
-Optionally "java MTCollatz.java [range N] [threads T] > results.csv" to get output of stop times as csv file.
+Run "java MTCollatz [range N] [threads T]" i.e. "java MTCollatz 10000 8"
+Optionally "java MTCollatz [range N] [threads T] 2> results.csv" to get output of Range R, threads T, and runtime in milliseconds.
+Optionally "java MTCollatz [range N] [threads T] > results.csv" to get output of stop times as csv file.
 
 ISSUES:
 

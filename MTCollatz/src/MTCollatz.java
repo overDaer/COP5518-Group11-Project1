@@ -4,8 +4,10 @@ Student Name: Dae Sung, Mukesh Rathore
 File Name: MTCollatz
 Assignment Number: Project 1
 
-This file contains all necessary classes to calculate the MTCollatz Stopping time
-for ranges and thread provided by the user within Command Prompt or equivalent.
+MTCollatz contains the main class to run the program. It calls the classes
+DataSet and DataSetHelper, where DataSet is the shared memory class, and
+DataSetHelper is 1 per thread. This helps maintain separation between the calculations
+and the incrementing, such that only the incrementing requires lock, unlock.
 **************************************************************/
 
 import java.lang.Thread;
@@ -13,7 +15,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
+import MTCollatzPackage.*;
 
 //parent class to contain all MTCollatz classes
 
@@ -29,101 +31,20 @@ public class MTCollatz {
 		String threadLimitArg = args[1];
 		// convert string to int
 
-		//String upperLimitArg = "100";
+		//String upperLimitArg = "200";
 		//String threadLimitArg = "1";
 
 		int upperLimit = (int) Integer.parseInt(upperLimitArg);
 		int threadLimit = (int) Integer.parseInt(threadLimitArg);
 
-		// shared data class
-		class DataSet {
-			ReentrantLock lock = new ReentrantLock();
-			int[] resultArray = new int[1000];
-			Instant startInstant = null;
-			Instant endInstant = null;
-			int counter = 1;
-			int maxLength = 0;
-
-			// lock, get counter, increment, unlock
-			public int GetCounter() {
-				try {
-					lock.lock();
-					return this.counter;
-				} finally {
-					this.counter++;
-					lock.unlock();
-				}
-			}
-
-			// if input is greater than maxLength then update
-			public void SetMax(int stopTime) {
-				try {
-					lock.lock();
-					if (this.maxLength < stopTime) {
-						maxLength = stopTime;
-					}
-				} finally {
-					lock.unlock();
-				}
-			}
-
-			// increments frequency of stoppingTime in resultArray
-			public void increment(int i) {
-				try {
-					lock.lock();
-					resultArray[i] += 1;
-				} finally {
-					lock.unlock();
-				}
-			}
-
-			public void print(int[] array) {
-				for (int i = 0; i < array.length; i++) {
-					System.out.println((i + 1) + ", " + array[i]);
-				}
-			}
-		}
-		// 1 per thread
-		class DataSetHelper {
-			// local thread safe count
-			int safeCount = 0;
-
-			public void Calculate(DataSet d) {
-				safeCount = d.GetCounter();
-				if (safeCount <= upperLimit && safeCount > 0) {
-					// calculated outside lock
-					int stopTime = Formula(safeCount);
-					d.SetMax(stopTime);
-					if (stopTime <= 1000)
-						d.increment(stopTime - 1); // increment frequency if critical code ran
-				}
-			}
-
-			// The MTCollatz formula
-			public static int Formula(int num) {
-				int i = 1;
-				// use long in case value gets large
-				long value = (long) num;
-				while (value != 1) {
-					if (value % 2 == 0) {
-						value = value / 2;
-						i++;
-					} else {
-						value = ((value * 3) + 1);
-						i++;
-					}
-				}
-				return i;
-			}
-			// prints out large array of results. Format is based on the assignment
-		}
 
 		// instance of shared memory class DataSet which is stored in heap
-		DataSet data = new DataSet();
-
+		MTCollatzPackage.DataSet data = new MTCollatzPackage.DataSet();
+		
+		//class threadRunner in main to reference single instance of DataSet data
 		class threadRunner implements Runnable {
-			// one instance for each thread
-			DataSetHelper dataHelp = new DataSetHelper();
+			// one instance DataSetHelper for each thread
+			MTCollatzPackage.DataSetHelper dataHelp = new MTCollatzPackage.DataSetHelper(upperLimit);
 
 			@Override
 			public void run() {
@@ -133,9 +54,10 @@ public class MTCollatz {
 				}
 			}
 		}
-		// Creates the threads specified by user
+		//list of type thread to maintain reference
 		List<Thread> threadList = new LinkedList<Thread>();
-
+		
+		// Creates the threads specified by user
 		for (int i = 0; i < threadLimit; i++) {
 			Thread thread = new Thread(new threadRunner(), String.valueOf(i));
 			threadList.add(thread);
@@ -143,7 +65,8 @@ public class MTCollatz {
 				data.startInstant = Instant.now();
 			thread.start();
 		}
-
+		
+		//join threads
 		for (Thread t : threadList) {
 			try {
 				t.join();
