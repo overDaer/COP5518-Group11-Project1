@@ -29,8 +29,8 @@ public class MTCollatz {
 		String threadLimitArg = args[1];
 		// convert string to int
 
-		// String upperLimitArg = "5";
-		// String threadLimitArg = "1";
+		//String upperLimitArg = "100";
+		//String threadLimitArg = "1";
 
 		int upperLimit = (int) Integer.parseInt(upperLimitArg);
 		int threadLimit = (int) Integer.parseInt(threadLimitArg);
@@ -41,7 +41,7 @@ public class MTCollatz {
 			int[] resultArray = new int[1000];
 			Instant startInstant = null;
 			Instant endInstant = null;
-			int counter = 2;
+			int counter = 1;
 			int maxLength = 0;
 
 			// lock, get counter, increment, unlock
@@ -78,21 +78,8 @@ public class MTCollatz {
 			}
 
 			public void print(int[] array) {
-				if (array.length > 0) {
-					String result = "<";
-					for (int i = 0; i < array.length; i++) {
-						result = result + String.valueOf(i + 2);
-						if (i < array.length - 1)
-							result = result + ",";
-					}
-					result = result + ">,<";
-					for (int i = 0; i < array.length; i++) {
-						result = result + String.valueOf(array[i]);
-						if (i < array.length - 1)
-							result = result + ",";
-					}
-					result = result + ">";
-					System.out.print(result);
+				for (int i = 0; i < array.length; i++) {
+					System.out.println((i + 1) + ", " + array[i]);
 				}
 			}
 		}
@@ -108,7 +95,7 @@ public class MTCollatz {
 					int stopTime = Formula(safeCount);
 					d.SetMax(stopTime);
 					if (stopTime <= 1000)
-						d.increment(stopTime - 2); // increment frequency if critical code ran
+						d.increment(stopTime - 1); // increment frequency if critical code ran
 				}
 			}
 
@@ -168,14 +155,14 @@ public class MTCollatz {
 			}
 		}
 
-		int[] array = new int[data.maxLength - 1];
-		for (int i = 0; i < data.maxLength - 1; i++) {
+		int[] array = new int[data.maxLength];
+		for (int i = 0; i < data.maxLength; i++) {
 			array[i] = data.resultArray[i];
 		}
 		data.print(array);
 		// duration measure from opening of threads to closing of threads
 		float duration = Duration.between(data.startInstant, data.endInstant).toMillis();
 		System.out.println();
-		System.err.println(upperLimit + "," + threadLimitArg + "," + duration);
+		System.err.println(upperLimit + ", " + threadLimitArg + ", " + duration + " milliseconds");
 	}
 }

@@ -8,8 +8,7 @@ INSTRUCTIONS:
 In order to run the java file, open the Windows PowerShell or CommandPrompt in the containing folder.
 Run "java MTCollatz.java [range N] [threads T]"
 Optionally "java MTCollatz.java [range N] [threads T] 2> results.csv" to get output of Range R, threads T, and runtime in milliseconds.
-Translate syntax as necessary based on OS.
-
+Optionally "java MTCollatz.java [range N] [threads T] > results.csv" to get output of stop times as csv file.
 ISSUES:
 
 Race Condition:
