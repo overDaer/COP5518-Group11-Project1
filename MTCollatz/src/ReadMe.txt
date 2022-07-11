@@ -1,18 +1,18 @@
-ReadME
-
+/************
 Student Name: Dae Sung, Mukesh Rathore
+File Name: ReadMe
 Assignment Number: Project 1
+************/
 
 INSTRUCTIONS:
-
 In order to run the java file, open the Windows PowerShell or CommandPrompt in the containing folder.
 Run "java MTCollatz.java [range N] [threads T]"
 Optionally "java MTCollatz.java [range N] [threads T] 2> results.csv" to get output of Range R, threads T, and runtime in milliseconds.
 Optionally "java MTCollatz.java [range N] [threads T] > results.csv" to get output of stop times as csv file.
+
 ISSUES:
 
 Race Condition:
-
 We definitely fell into a race condition issue, where we perform a while 
 loop in the run() method implementing Runnable, outside of the lock.lock() lock.unlock() safe space. 
 Because of this, the counter was incrementing in the short time between the while conditional 
